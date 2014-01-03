@@ -719,16 +719,19 @@ Set($ForwardFromUser, 0);
 The order of external HTML formatters to look for; programs which are
 not found to be installed will be skipped.  C<core> is the internal perl
 converter, which is significantly faster than the others, but may fail
-to successfully convert even on some relatively simple HTML.  Falls back
-to C<core> if no explicitly listed option is available.
+to successfully convert even on some relatively simple HTML.  C<perl> is
+a somewhat improved perl-based converter, but requires an optional
+module.  Falls back to C<core> if no explicitly listed option is
+available.
 
-Using formatters other than C<core> requires that the
-L<HTML::FormatExternal> module be installed; it is an optional
-dependency which RT will not install by default.
+Using the C<perl> formatter requires the L<HTML::HTML5::ToText> optional
+module be installed.  Using external formatters (i.e. C<w3m>, etc)
+requires that the L<HTML::FormatExternal> module be installed.  Neither
+of these modules are installed by RT by default.
 
 =cut
 
-Set(@HTMLFormatters, "w3m", "elinks", "html2text", "links", "lynx", "core");
+Set(@HTMLFormatters, "perl", "w3m", "elinks", "html2text", "links", "lynx", "core");
 
 =back
 
