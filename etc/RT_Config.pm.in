@@ -714,6 +714,22 @@ will use the address of the current user and remove RT's subject tag.
 
 Set($ForwardFromUser, 0);
 
+=item C<@HTMLFormatters>
+
+The order of external HTML formatters to look for; programs which are
+not found to be installed will be skipped.  C<core> is the internal perl
+converter, which is significantly faster than the others, but may fail
+to successfully convert even on some relatively simple HTML.  Falls back
+to C<core> if no explicitly listed option is available.
+
+Using formatters other than C<core> requires that the
+L<HTML::FormatExternal> module be installed; it is an optional
+dependency which RT will not install by default.
+
+=cut
+
+Set(@HTMLFormatters, "w3m", "elinks", "html2text", "links", "lynx", "core");
+
 =back
 
 =head2 Email dashboards
