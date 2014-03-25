@@ -281,10 +281,29 @@ sub extract_strings_from_code {
         push @{ $FILECAT{$val} }, [ $filename, $line, '' ];
     }
 
+    # Specific key  foo => "...", #loc{foo}
+    $line = 1;
+    pos($_) = 0;
+    while (m/\G(.*?(\w+|$re_delim)\s*=>\s*($re_delim).*?\#$re_space_wo_nl*loc\{\2\}$re_space_wo_nl*)$/smgo) {
+        my ( $all, $key, $val ) = ( $1, $2, $10 );
+        $line += ( $all =~ tr/\n/\n/ );
+        $seen{$line}++;
+        unless ( defined $key && defined $val ) {
+            warn "Couldn't process loc_pair at $filename:$line:\n  key«$key»\n  val«$val»\n";
+            next;
+        }
+        $key =~ s/^(['"])(.*)\1$/$2/g; # dequote potentially quoted string
+        $val = substr($val, 1, -1);    # dequote always quoted string
+        $key  =~ s/\\(['"])/$1/g;
+        $val  =~ s/\\(['"])/$1/g;
+        push @{ $FILECAT{$key} }, [ $filename, $line, '' ];
+        push @{ $FILECAT{$val} }, [ $filename, $line, '' ];
+    }
+
     # Check for ones we missed
     $line = 1;
     pos($_) = 0;
-    while (m/\G(.*? \# $re_space_wo_nl* (loc (_\w+|\(\))?) $re_space_wo_nl* $)/smgox) {
+    while (m/\G(.*? \# $re_space_wo_nl* (loc (_\w+|\(\)|{$re_delim})?) $re_space_wo_nl* $)/smgox) {
         my ($all, $loc_type) = ($1, $2);
         $line += ( $all =~ tr/\n/\n/ );
         next if $seen{$line};
