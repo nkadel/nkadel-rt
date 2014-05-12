@@ -304,13 +304,17 @@ my $analyze_img = sub {
 };
 
 if (my $file_hash = _UploadedFile( 'logo-upload' )) {
-    my ($id, $msg) = RT->System->SetAttribute( Name => "UserLogo",
-                                                Description => "User-provided logo",
-                                                Content => {
-                                                    type => $file_hash->{ContentType},
-                                                    data => $file_hash->{LargeContent},
-                                                    hash => md5_hex($file_hash->{LargeContent}),
-                                                } );
+    $colors = $analyze_img->($file_hash->{LargeContent});
+    my ($id, $msg) = RT->System->SetAttribute(
+        Name => "UserLogo",
+        Description => "User-provided logo",
+        Content => {
+            type => $file_hash->{ContentType},
+            data => $file_hash->{LargeContent},
+            hash => md5_hex($file_hash->{LargeContent}),
+            colors => $colors,
+        }
+    );
     push @results, loc("Unable to set UserLogo: [_1]", $msg) unless $id;
 
     $imgdata = $file_hash->{LargeContent};
@@ -323,13 +327,25 @@ else {
         my $content = $attr->Content;
         if (ref($content) eq 'HASH') {
             $imgdata = $content->{data};
+            $colors = $content->{colors};
+            unless ($colors) {
+                # No colors cached; attempt to generate them
+                $colors = $content->{colors} = $analyze_img->($content->{data});
+                if ($content->{colors}) {
+                    # Found colors; update the attribute
+                    RT->System->SetAttribute(
+                        Name => "UserLogo",
+                        Description => "User-provided logo",
+                        Content => $content,
+                    );
+                }
+            }
         }
         else {
             RT->System->DeleteAttribute('UserLogo');
         }
     }
 }
-$analyze_img->($imgdata);
 
 if ($user_css) {
     if ($ARGS{'reset_css'}) {
