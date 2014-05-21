@@ -63,6 +63,7 @@ package RT::ScripAction;
 
 use strict;
 use warnings;
+use Module::Runtime 'use_module';
 
 use base 'RT::Record';
 
@@ -166,13 +167,10 @@ sub LoadAction  {
         $self->{'TemplateObj'} = $args{'TemplateObj'};
     }
 
-    $self->ExecModule =~ /^(\w+)$/;
-    my $module = $1;
-    my $type = "RT::Action::". $module;
+    my $module = $self->ExecModule;
+    my $type = 'RT::Action::' . $module;
 
-    eval "require $type" || die "Require of $type failed.\n$@\n";
-
-    return $self->{'Action'} = $type->new(
+    return $self->{'Action'} = use_module($type)->new(
         %args,
         Argument       => $self->Argument,
         CurrentUser    => $self->CurrentUser,
