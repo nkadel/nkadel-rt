@@ -296,7 +296,7 @@ if (!$user_css) {
 
 use List::MoreUtils qw(uniq);
 
-my $has_color_analyzer = eval { require Convert::Color; 1 };
+my $has_color_analyzer = Convert::Color->require;
 my $colors;
 my %gd_can;
 my $valid_image_types;

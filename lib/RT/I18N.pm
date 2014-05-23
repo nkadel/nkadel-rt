@@ -636,8 +636,7 @@ sub _CanonicalizeCharset {
         return 'gbk';
     }
     elsif ( $charset =~ /^(?:(?:big5(-1984|-2003|ext|plus))|cccii|unisys|euc-tw|gb18030|(?:cns11643-\d+))$/ ) {
-        eval { require Encode::HanExtra };
-        if ( $@ ) {
+        unless ( Encode::HanExtra->require ) {
             RT->Logger->error("Please install Encode::HanExtra to handle $charset");
         }
         return $charset;
